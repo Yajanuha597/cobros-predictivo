@@ -1,6 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Equal, In, LessThan, Repository } from 'typeorm';
+import {
+  Equal,
+  In,
+  LessThanOrEqual,
+  Repository,
+} from 'typeorm';
 
 import { Prestamo } from '../../prestamos/entities/prestamo.entity';
 import { CreateCuotaDto } from '../dto/create-cuota.dto';
@@ -41,23 +46,31 @@ export class CuotaRepository {
     });
   }
 
-  findForGestionCobranza(today: string, tomorrow: string): Promise<Cuota[]> {
+  findForGestionCobranza(
+    today: string,
+    tomorrow: string,
+  ): Promise<Cuota[]> {
     return this.repository.find({
       where: [
+        // Cuotas vencidas y cuotas que vencen HOY
         {
           estado: In(['PENDIENTE', 'VENCIDA']),
-          fechaVencimiento: LessThan(today),
+          fechaVencimiento: LessThanOrEqual(today),
         },
+
+        // Cuotas que vencen MAÑANA
         {
           estado: 'PENDIENTE',
           fechaVencimiento: Equal(tomorrow),
         },
       ],
+
       relations: {
         prestamo: {
           cliente: true,
         },
       },
+
       order: {
         fechaVencimiento: 'ASC',
         numeroCuota: 'ASC',
@@ -65,7 +78,10 @@ export class CuotaRepository {
     });
   }
 
-  create(data: CreateCuotaData, prestamo: Prestamo): Cuota {
+  create(
+    data: CreateCuotaData,
+    prestamo: Prestamo,
+  ): Cuota {
     return this.repository.create({
       ...data,
       estado: data.estado ?? 'PENDIENTE',
@@ -74,8 +90,15 @@ export class CuotaRepository {
     });
   }
 
-  merge(cuota: Cuota, data: UpdateCuotaData, prestamo?: Prestamo): Cuota {
-    const updatedCuota = this.repository.merge(cuota, data);
+  merge(
+    cuota: Cuota,
+    data: UpdateCuotaData,
+    prestamo?: Prestamo,
+  ): Cuota {
+    const updatedCuota = this.repository.merge(
+      cuota,
+      data,
+    );
 
     if (prestamo) {
       updatedCuota.prestamo = prestamo;
