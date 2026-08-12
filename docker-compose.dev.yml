@@ -1,0 +1,25 @@
+services:
+  backend:
+    image: cobros-predictivo-backend:local
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    pull_policy: build
+    container_name: cobros_backend
+
+    environment:
+      PORT: 3000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+
+    ports:
+      - "3000:3000"
+
+    networks:
+      - cobros_network
+
+    labels:
+      - "traefik.enable=false"

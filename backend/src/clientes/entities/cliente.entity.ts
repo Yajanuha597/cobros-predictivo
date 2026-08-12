@@ -2,9 +2,12 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+
+import { Prestamo } from '../../prestamos/entities/prestamo.entity';
 
 @Entity('clientes')
 export class Cliente {
@@ -31,6 +34,9 @@ export class Cliente {
 
   @Column({ default: true })
   estado!: boolean;
+
+  @OneToMany(() => Prestamo, (prestamo) => prestamo.cliente)
+  prestamos!: Prestamo[];
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
