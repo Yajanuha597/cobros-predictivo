@@ -14,13 +14,14 @@ import {
 })
 export class ClienteService {
   private readonly http = inject(HttpClient);
+
   private readonly apiUrl =
-    window.location.hostname === 'localhost'
-      ? 'http://localhost:3000/clientes'
-      : 'https://backsistemacobros.byronrm.com/clientes';
+    'https://backsistemacobros.byronrm.com/clientes';
 
   findAll(): Observable<ClientesResponse> {
-    return this.http.get<ClientesResponse>(this.apiUrl).pipe(timeout(15000));
+    return this.http
+      .get<ClientesResponse>(this.apiUrl)
+      .pipe(timeout(15000));
   }
 
   create(data: ClientePayload): Observable<ClienteResponse> {

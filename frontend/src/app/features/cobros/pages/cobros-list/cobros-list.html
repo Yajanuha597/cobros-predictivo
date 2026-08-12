@@ -1,1 +1,311 @@
-<p>cobros-list works!</p>
+<div class="cobros-page">
+
+  <div class="page-header">
+
+    <div>
+      <h1>Gestión de Cobros</h1>
+      <p>
+        Seguimiento de cuotas vencidas y próximas a vencer
+      </p>
+    </div>
+
+    <button
+      class="btn-refresh"
+      type="button"
+      (click)="cargarCobros()"
+      [disabled]="estado === 'cargando'">
+
+      ↻ Actualizar
+
+    </button>
+
+  </div>
+
+
+  <!-- ========================= -->
+  <!-- CARGANDO -->
+  <!-- ========================= -->
+
+  @if (estado === 'cargando') {
+
+    <div class="loading">
+
+      <div class="loading-icon">
+        ⟳
+      </div>
+
+      <h3>
+        Cargando información de cobros...
+      </h3>
+
+      <p>
+        Consultando las cuotas pendientes.
+      </p>
+
+    </div>
+
+  }
+
+
+  <!-- ========================= -->
+  <!-- ERROR -->
+  <!-- ========================= -->
+
+  @if (estado === 'error') {
+
+    <div class="error">
+
+      <h3>
+        Error
+      </h3>
+
+      <p>
+        {{ error }}
+      </p>
+
+      <button
+        class="btn-refresh"
+        type="button"
+        (click)="cargarCobros()">
+
+        Intentar nuevamente
+
+      </button>
+
+    </div>
+
+  }
+
+
+  <!-- ========================= -->
+  <!-- SIN COBROS -->
+  <!-- ========================= -->
+
+  @if (estado === 'vacio') {
+
+    <div class="empty">
+
+      <div class="empty-icon">
+        ✓
+      </div>
+
+      <h3>
+        No hay cobros pendientes
+      </h3>
+
+      <p>
+        No existen cuotas vencidas o próximas a vencer.
+      </p>
+
+      <button
+        class="btn-refresh"
+        type="button"
+        (click)="cargarCobros()">
+
+        ↻ Actualizar
+
+      </button>
+
+    </div>
+
+  }
+
+
+  <!-- ========================= -->
+  <!-- CON COBROS -->
+  <!-- ========================= -->
+
+  @if (estado === 'datos') {
+
+    <div class="summary">
+
+      <div class="summary-card">
+
+        <span>
+          Total de gestiones
+        </span>
+
+        <strong>
+          {{ cobros.length }}
+        </strong>
+
+      </div>
+
+
+      <div class="summary-card">
+
+        <span>
+          Vencen mañana
+        </span>
+
+        <strong>
+          {{
+            cobros.filter(
+              c => c.tipoGestion === 'VENCE_MANANA'
+            ).length
+          }}
+        </strong>
+
+      </div>
+
+
+      <div class="summary-card">
+
+        <span>
+          Vencidas
+        </span>
+
+        <strong>
+          {{
+            cobros.filter(
+              c => c.tipoGestion === 'VENCIDA'
+            ).length
+          }}
+        </strong>
+
+      </div>
+
+    </div>
+
+
+    <div class="table-container">
+
+      <table>
+
+        <thead>
+
+          <tr>
+
+            <th>
+              Cliente
+            </th>
+
+            <th>
+              Identificación
+            </th>
+
+            <th>
+              Cuota
+            </th>
+
+            <th>
+              Vencimiento
+            </th>
+
+            <th>
+              Monto
+            </th>
+
+            <th>
+              Saldo pendiente
+            </th>
+
+            <th>
+              Gestión
+            </th>
+
+            <th>
+              Riesgo
+            </th>
+
+          </tr>
+
+        </thead>
+
+
+        <tbody>
+
+          @for (
+            cobro of cobros;
+            track cobro.cuota.id
+          ) {
+
+            <tr>
+
+              <td>
+
+                <strong>
+                  {{ getNombreCliente(cobro) }}
+                </strong>
+
+              </td>
+
+
+              <td>
+                {{ cobro.cliente.identificacion }}
+              </td>
+
+
+              <td>
+                #{{ cobro.cuota.numeroCuota }}
+              </td>
+
+
+              <td>
+                {{ cobro.cuota.fechaVencimiento }}
+              </td>
+
+
+              <td>
+                ${{ cobro.cuota.monto | number:'1.2-2' }}
+              </td>
+
+
+              <td>
+
+                <strong>
+                  ${{ cobro.cuota.saldoPendiente | number:'1.2-2' }}
+                </strong>
+
+              </td>
+
+
+              <td>
+
+                <span
+                  class="badge"
+                  [class.manana]="
+                    cobro.tipoGestion === 'VENCE_MANANA'
+                  "
+                  [class.vencida]="
+                    cobro.tipoGestion === 'VENCIDA'
+                  ">
+
+                  {{
+                    cobro.tipoGestion === 'VENCE_MANANA'
+                      ? 'Vence mañana'
+                      : 'Vencida'
+                  }}
+
+                </span>
+
+              </td>
+
+
+              <td>
+
+                <span
+                  class="risk"
+                  [class.bajo]="cobro.nivelRiesgo === 'BAJO'"
+                  [class.medio]="cobro.nivelRiesgo === 'MEDIO'"
+                  [class.alto]="cobro.nivelRiesgo === 'ALTO'">
+
+                  {{ cobro.nivelRiesgo }}
+
+                </span>
+
+              </td>
+
+            </tr>
+
+          }
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  }
+
+</div>
