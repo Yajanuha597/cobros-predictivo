@@ -1,9 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
-
+import { Component, OnInit, inject } from '@angular/core';
 import {
   CobroGestion,
-  CobroService,
+  CobroService
 } from '../../../../core/services/cobro.service';
 
 @Component({
@@ -11,89 +10,94 @@ import {
   standalone: true,
   imports: [CommonModule],
   templateUrl: './cobros-list.html',
-  styleUrl: './cobros-list.scss',
+  styleUrl: './cobros-list.scss'
 })
 export class CobrosList implements OnInit {
-
   private readonly cobroService = inject(CobroService);
-  private readonly changeDetectorRef = inject(ChangeDetectorRef);
 
   cobros: CobroGestion[] = [];
 
-  cargando = true;
+  cargando = false;
+
   error = '';
 
-  estado: 'cargando' | 'error' | 'vacio' | 'datos' = 'cargando';
+  estado: 'cargando' | 'error' | 'vacio' | 'datos' = 'vacio';
 
   ngOnInit(): void {
-    console.log('=== COBROS LIST INICIADO ===');
     this.cargarCobros();
   }
 
   cargarCobros(): void {
-
-    console.log('=== INICIANDO CARGA DE COBROS ===');
-
-    this.cargando = true;
     this.error = '';
-    this.estado = 'cargando';
 
     this.cobroService.findGestionCobranza().subscribe({
-
       next: (response) => {
+        console.log('Respuesta de gestión de cobros:', response);
 
-        console.log('RESPUESTA COMPLETA:', response);
-        console.log('CUOTAS RECIBIDAS:', response.cuotas);
-        console.log(
-          'TOTAL DE CUOTAS:',
-          response.cuotas ? response.cuotas.length : 0
-        );
+        this.cobros = response?.cuotas ?? [];
 
-        this.cobros = response.cuotas ?? [];
+        if (this.cobros.length > 0) {
+          this.estado = 'datos';
+        } else {
+          this.estado = 'vacio';
+        }
 
         this.cargando = false;
 
-        if (this.cobros.length === 0) {
-          this.estado = 'vacio';
-          console.log('ESTADO FINAL: VACIO');
-        } else {
-          this.estado = 'datos';
-          console.log('ESTADO FINAL: DATOS');
-        }
-
-        this.changeDetectorRef.detectChanges();
-
-        console.log('CARGANDO:', this.cargando);
-        console.log('ESTADO:', this.estado);
-        console.log('TOTAL COBROS:', this.cobros.length);
+        console.log('Cobros:', this.cobros.length);
+        console.log('Estado:', this.estado);
+        console.log('Cargando:', this.cargando);
       },
 
       error: (err) => {
-
-        console.error('ERROR AL CARGAR COBROS:', err);
+        console.error('Error al cargar cobros:', err);
 
         this.cargando = false;
         this.estado = 'error';
 
         this.error =
-          'No se pudo cargar la información de cobros.';
-
-        this.changeDetectorRef.detectChanges();
-
-        console.log('ESTADO FINAL: ERROR');
-      },
-
+          'No se pudo cargar la información de cobros. Verifica que el servidor esté disponible.';
+      }
     });
   }
 
   getNombreCliente(cobro: CobroGestion): string {
-    return `${cobro.cliente.nombres} ${cobro.cliente.apellidos}`;
+    const nombres = cobro?.cliente?.nombres ?? '';
+    const apellidos = cobro?.cliente?.apellidos ?? '';
+
+    return `${nombres} ${apellidos}`.trim() || 'Cliente sin nombre';
+  }
+
+  getIdentificacion(cobro: CobroGestion): string {
+    return cobro?.cliente?.identificacion || 'Sin identificación';
+  }
+
+  getTipoGestion(cobro: CobroGestion): string {
+    if (cobro.tipoGestion === 'VENCE_MANANA') {
+      return 'Vence mañana';
+    }
+
+    if (cobro.tipoGestion === 'VENCIDA') {
+      return 'Vencida';
+    }
+
+    return cobro.tipoGestion || 'Sin gestión';
+  }
+
+  getClaseGestion(cobro: CobroGestion): string {
+    if (cobro.tipoGestion === 'VENCE_MANANA') {
+      return 'manana';
+    }
+
+    if (cobro.tipoGestion === 'VENCIDA') {
+      return 'vencida';
+    }
+
+    return '';
   }
 
   getClaseRiesgo(nivelRiesgo: string): string {
-
     switch (nivelRiesgo) {
-
       case 'BAJO':
         return 'bajo';
 
@@ -104,7 +108,23 @@ export class CobrosList implements OnInit {
         return 'alto';
 
       default:
-        return '';
+        return 'sin-riesgo';
     }
+  }
+
+  getRiesgoTexto(nivelRiesgo: string): string {
+    return nivelRiesgo || 'Sin riesgo';
+  }
+
+  contarVencidas(): number {
+    return this.cobros.filter(
+      cobro => cobro.tipoGestion === 'VENCIDA'
+    ).length;
+  }
+
+  contarManana(): number {
+    return this.cobros.filter(
+      cobro => cobro.tipoGestion === 'VENCE_MANANA'
+    ).length;
   }
 }

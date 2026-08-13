@@ -45,8 +45,25 @@ export interface GestionCobranzaResponse {
   cuotas: CobroGestion[];
 }
 
+export interface CuotasResponse {
+  success: boolean;
+  message: string;
+  cuotas: Array<{
+    id: number;
+    prestamoId: number;
+    prestamo: CobroPrestamo & {
+      cliente: CobroCliente;
+    };
+    numeroCuota: number;
+    fechaVencimiento: string;
+    monto: string | number;
+    saldoPendiente: string | number;
+    estado: string;
+  }>;
+}
+
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class CobroService {
   private readonly http = inject(HttpClient);
@@ -59,6 +76,16 @@ export class CobroService {
       .get<GestionCobranzaResponse>(
         `${this.apiUrl}/gestion-cobranza`
       )
-      .pipe(timeout(15000));
+      .pipe(
+        timeout(15000)
+      );
+  }
+
+  findAll(): Observable<CuotasResponse> {
+    return this.http
+      .get<CuotasResponse>(this.apiUrl)
+      .pipe(
+        timeout(15000)
+      );
   }
 }

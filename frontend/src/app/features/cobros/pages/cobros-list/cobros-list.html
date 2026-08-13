@@ -1,62 +1,53 @@
 <div class="cobros-page">
 
   <div class="page-header">
+    <div class="header-content">
 
-    <div>
-      <h1>Gestión de Cobros</h1>
-      <p>
-        Seguimiento de cuotas vencidas y próximas a vencer
-      </p>
+      <div class="header-icon">
+        💰
+      </div>
+
+      <div>
+        <span class="section-label">
+          GESTIÓN FINANCIERA
+        </span>
+
+        <h1>
+          Gestión de Cobros
+        </h1>
+
+        <p>
+          Seguimiento de cuotas vencidas y próximas a vencer
+        </p>
+      </div>
+
     </div>
 
     <button
       class="btn-refresh"
       type="button"
-      (click)="cargarCobros()"
-      [disabled]="estado === 'cargando'">
+      (click)="cargarCobros()">
 
       ↻ Actualizar
 
     </button>
-
   </div>
 
 
-  <!-- ========================= -->
-  <!-- CARGANDO -->
-  <!-- ========================= -->
-
-  @if (estado === 'cargando') {
-
-    <div class="loading">
-
-      <div class="loading-icon">
-        ⟳
-      </div>
-
-      <h3>
-        Cargando información de cobros...
-      </h3>
-
-      <p>
-        Consultando las cuotas pendientes.
-      </p>
-
-    </div>
-
-  }
-
-
-  <!-- ========================= -->
-  <!-- ERROR -->
-  <!-- ========================= -->
-
   @if (estado === 'error') {
 
-    <div class="error">
+    <div class="status-card error-card">
+
+      <div class="status-icon error-icon">
+        !
+      </div>
+
+      <span class="status-label error-label">
+        ERROR
+      </span>
 
       <h3>
-        Error
+        No se pudo cargar la información
       </h3>
 
       <p>
@@ -64,11 +55,11 @@
       </p>
 
       <button
-        class="btn-refresh"
+        class="btn-retry"
         type="button"
         (click)="cargarCobros()">
 
-        Intentar nuevamente
+        ↻ Intentar nuevamente
 
       </button>
 
@@ -77,32 +68,32 @@
   }
 
 
-  <!-- ========================= -->
-  <!-- SIN COBROS -->
-  <!-- ========================= -->
-
   @if (estado === 'vacio') {
 
-    <div class="empty">
+    <div class="status-card empty-card">
 
-      <div class="empty-icon">
+      <div class="status-icon success-icon">
         ✓
       </div>
+
+      <span class="status-label success-label">
+        ESTADO ACTUAL
+      </span>
 
       <h3>
         No hay cobros pendientes
       </h3>
 
       <p>
-        No existen cuotas vencidas o próximas a vencer.
+        En este momento no existen cuotas vencidas o próximas a vencer.
       </p>
 
       <button
-        class="btn-refresh"
+        class="btn-retry"
         type="button"
         (click)="cargarCobros()">
 
-        ↻ Actualizar
+        ↻ Actualizar información
 
       </button>
 
@@ -111,198 +102,207 @@
   }
 
 
-  <!-- ========================= -->
-  <!-- CON COBROS -->
-  <!-- ========================= -->
-
   @if (estado === 'datos') {
 
     <div class="summary">
 
-      <div class="summary-card">
+      <div class="summary-card total-card">
+        <div class="summary-icon">
+          📋
+        </div>
 
-        <span>
-          Total de gestiones
-        </span>
+        <div>
+          <span>
+            Total de gestiones
+          </span>
 
-        <strong>
-          {{ cobros.length }}
-        </strong>
-
+          <strong>
+            {{ cobros.length }}
+          </strong>
+        </div>
       </div>
 
 
-      <div class="summary-card">
+      <div class="summary-card warning-card">
+        <div class="summary-icon">
+          📅
+        </div>
 
-        <span>
-          Vencen mañana
-        </span>
+        <div>
+          <span>
+            Vencen mañana
+          </span>
 
-        <strong>
-          {{
-            cobros.filter(
-              c => c.tipoGestion === 'VENCE_MANANA'
-            ).length
-          }}
-        </strong>
-
+          <strong>
+            {{ contarManana() }}
+          </strong>
+        </div>
       </div>
 
 
-      <div class="summary-card">
+      <div class="summary-card danger-card">
+        <div class="summary-icon">
+          ⚠
+        </div>
 
-        <span>
-          Vencidas
-        </span>
+        <div>
+          <span>
+            Cuotas vencidas
+          </span>
 
-        <strong>
-          {{
-            cobros.filter(
-              c => c.tipoGestion === 'VENCIDA'
-            ).length
-          }}
-        </strong>
-
+          <strong>
+            {{ contarVencidas() }}
+          </strong>
+        </div>
       </div>
 
     </div>
 
 
-    <div class="table-container">
+    <div class="table-card">
 
-      <table>
+      <div class="table-header">
 
-        <thead>
+        <div>
+          <h2>
+            Detalle de cobros
+          </h2>
 
-          <tr>
+          <p>
+            Información actualizada desde el sistema
+          </p>
+        </div>
 
-            <th>
-              Cliente
-            </th>
+        <span class="total-badge">
+          {{ cobros.length }} registros
+        </span>
 
-            <th>
-              Identificación
-            </th>
-
-            <th>
-              Cuota
-            </th>
-
-            <th>
-              Vencimiento
-            </th>
-
-            <th>
-              Monto
-            </th>
-
-            <th>
-              Saldo pendiente
-            </th>
-
-            <th>
-              Gestión
-            </th>
-
-            <th>
-              Riesgo
-            </th>
-
-          </tr>
-
-        </thead>
+      </div>
 
 
-        <tbody>
+      <div class="table-container">
 
-          @for (
-            cobro of cobros;
-            track cobro.cuota.id
-          ) {
+        <table>
+
+          <thead>
 
             <tr>
-
-              <td>
-
-                <strong>
-                  {{ getNombreCliente(cobro) }}
-                </strong>
-
-              </td>
-
-
-              <td>
-                {{ cobro.cliente.identificacion }}
-              </td>
-
-
-              <td>
-                #{{ cobro.cuota.numeroCuota }}
-              </td>
-
-
-              <td>
-                {{ cobro.cuota.fechaVencimiento }}
-              </td>
-
-
-              <td>
-                ${{ cobro.cuota.monto | number:'1.2-2' }}
-              </td>
-
-
-              <td>
-
-                <strong>
-                  ${{ cobro.cuota.saldoPendiente | number:'1.2-2' }}
-                </strong>
-
-              </td>
-
-
-              <td>
-
-                <span
-                  class="badge"
-                  [class.manana]="
-                    cobro.tipoGestion === 'VENCE_MANANA'
-                  "
-                  [class.vencida]="
-                    cobro.tipoGestion === 'VENCIDA'
-                  ">
-
-                  {{
-                    cobro.tipoGestion === 'VENCE_MANANA'
-                      ? 'Vence mañana'
-                      : 'Vencida'
-                  }}
-
-                </span>
-
-              </td>
-
-
-              <td>
-
-                <span
-                  class="risk"
-                  [class.bajo]="cobro.nivelRiesgo === 'BAJO'"
-                  [class.medio]="cobro.nivelRiesgo === 'MEDIO'"
-                  [class.alto]="cobro.nivelRiesgo === 'ALTO'">
-
-                  {{ cobro.nivelRiesgo }}
-
-                </span>
-
-              </td>
-
+              <th>Cliente</th>
+              <th>Identificación</th>
+              <th>Cuota</th>
+              <th>Vencimiento</th>
+              <th>Monto</th>
+              <th>Saldo pendiente</th>
+              <th>Gestión</th>
+              <th>Riesgo</th>
             </tr>
 
-          }
+          </thead>
 
-        </tbody>
+          <tbody>
 
-      </table>
+            @for (cobro of cobros; track cobro.cuota.id) {
+
+              <tr>
+
+                <td>
+
+                  <div class="client-cell">
+
+                    <div class="client-avatar">
+                      {{ cobro.cliente.nombres?.charAt(0) || 'C' }}
+                    </div>
+
+                    <div class="client-info">
+
+                      <strong>
+                        {{ getNombreCliente(cobro) }}
+                      </strong>
+
+                      <small>
+                        {{ cobro.cliente.email || 'Sin correo' }}
+                      </small>
+
+                    </div>
+
+                  </div>
+
+                </td>
+
+
+                <td>
+                  <span class="identification">
+                    {{ getIdentificacion(cobro) }}
+                  </span>
+                </td>
+
+
+                <td>
+                  <span class="installment">
+                    #{{ cobro.cuota.numeroCuota }}
+                  </span>
+                </td>
+
+
+                <td>
+                  <span class="date">
+                    {{ cobro.cuota.fechaVencimiento | date:'dd/MM/yyyy' }}
+                  </span>
+                </td>
+
+
+                <td>
+                  <strong class="amount">
+                    {{ cobro.cuota.monto | currency:'USD':'symbol':'1.2-2' }}
+                  </strong>
+                </td>
+
+
+                <td>
+                  <strong class="balance">
+                    {{ cobro.cuota.saldoPendiente | currency:'USD':'symbol':'1.2-2' }}
+                  </strong>
+                </td>
+
+
+                <td>
+
+                  <span
+                    class="badge"
+                    [class.manana]="getClaseGestion(cobro) === 'manana'"
+                    [class.vencida]="getClaseGestion(cobro) === 'vencida'">
+
+                    {{ getTipoGestion(cobro) }}
+
+                  </span>
+
+                </td>
+
+
+                <td>
+
+                  <span
+                    class="risk"
+                    [class.bajo]="getClaseRiesgo(cobro.nivelRiesgo) === 'bajo'"
+                    [class.medio]="getClaseRiesgo(cobro.nivelRiesgo) === 'medio'"
+                    [class.alto]="getClaseRiesgo(cobro.nivelRiesgo) === 'alto'"
+                    [class.sin-riesgo]="getClaseRiesgo(cobro.nivelRiesgo) === 'sin-riesgo'">
+
+                    {{ getRiesgoTexto(cobro.nivelRiesgo) }}
+
+                  </span>
+
+                </td>
+
+              </tr>
+
+            }
+
+          </tbody>
+
+        </table>
+
+      </div>
 
     </div>
 
